@@ -33,15 +33,15 @@ Then open your browser at 👉 [http://localhost:5173](http://localhost:5173) --
 
 ---
 
-# 🛠️ Tech Stack
+## 🛠️ Tech Stack
 
-## 🌐 Frontend
+### 🌐 Frontend
 - **React** – Frontend framework  
 - **TypeScript** – Type safety  
 - **TailwindCSS** – Styling  
 - **Vite** – Fast bundler  
 
-## 🔧 Backend
+### 🔧 Backend
 - **Node.js** – Runtime environment  
 - **Express.js** – Web framework  
 - **MongoDB** – NoSQL database  
