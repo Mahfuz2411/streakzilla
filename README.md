@@ -23,10 +23,13 @@ Then open your browser at 👉 [http://localhost:5173](http://localhost:5173) --
 ---
 
 ## ✨ Features
-- 📅 Track and maintain streaks for daily tasks  
-- 🎨 Modern UI powered by TailwindCSS  
-- ⚡ Fast development experience with Vite  
-- 🛡️ Built with TypeScript for type safety  
+- 📅 **Track your daily habits** – Add tasks and mark them as complete every day to maintain your streak.  
+- 🔔 **Never miss a day** – Get motivated by seeing your current streak grow.  
+- 🏆 **Streak progress** – Visual indicators show how consistent you’ve been over time.  
+<!-- - 📊 **View history** – Check past completions and see your progress over days, weeks, or months.   -->
+- 🎨 **Clean and intuitive interface** – Simple, modern UI makes tracking easy and enjoyable.  
+- ⚡ **Quick and responsive** – Works smoothly on web.  
+
 
 ---
 
