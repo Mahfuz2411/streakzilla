@@ -1,6 +1,6 @@
 # Streakzilla 🎯
 
-Streakzilla is a web application built with React, TypeScript, and TailwindCSS.  
+<!-- Streakzilla is a web application built with React, TypeScript, and TailwindCSS.   -->
 It helps users build and maintain daily streaks by tracking task completions in a fun and motivating way.  
 
 ---
