@@ -1,6 +1,6 @@
 import { Progress } from "@/components/ui/progress"
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card"
-import { Calendar, Flame, Plus, Target, TrendingUp, Trophy } from "lucide-react"
+import { Calendar, Flame, Plus, Target, Trophy } from "lucide-react"
 import { Button } from "@/components/ui/button";
 
 const setShowAddTask = (show: boolean) => {

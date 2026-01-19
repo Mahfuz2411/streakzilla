@@ -157,23 +157,23 @@ function App() {
       <div className="min-h-screen bg-background p-4 md:p-6">
         <div className="max-w-4xl mx-auto space-y-6">
           {/* Header */}
-          <div className="text-center space-y-2">
-            <h1 className="text-4xl font-bold text-foreground flex items-center justify-center gap-2">
-              <Flame className="text-primary" />
+          <div className="text-center space-y-2 px-2">
+            <h1 className="text-3xl sm:text-4xl font-bold text-foreground flex items-center justify-center gap-2 flex-wrap">
+              <Flame className="text-primary h-8 w-8 sm:h-10 sm:w-10" />
               Streakzilla
             </h1>
-            <p className="text-muted-foreground text-lg">{todaysQuote}</p>
+            <p className="text-muted-foreground text-sm sm:text-base">{todaysQuote}</p>
           </div>
 
           {/* Stats Overview */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4 px-2">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Today's Progress</CardTitle>
-                <Target className="h-4 w-4 text-muted-foreground" />
+                <CardTitle className="text-xs sm:text-sm font-medium">Today's Progress</CardTitle>
+                <Target className="h-4 w-4 text-muted-foreground flex-shrink-0" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-primary">
+                <div className="text-xl sm:text-2xl font-bold text-primary">
                   {completedToday}/{totalTasks}
                 </div>
                 <Progress value={completionPercentage} className="mt-2" />
@@ -183,47 +183,47 @@ function App() {
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Active Streaks</CardTitle>
-                <Flame className="h-4 w-4 text-muted-foreground" />
+                <CardTitle className="text-xs sm:text-sm font-medium">Active Streaks</CardTitle>
+                <Flame className="h-4 w-4 text-muted-foreground flex-shrink-0" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-primary">{totalStreaks}</div>
+                <div className="text-xl sm:text-2xl font-bold text-primary">{totalStreaks}</div>
                 <p className="text-xs text-muted-foreground">Total streak days</p>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Best Streak</CardTitle>
-                <Trophy className="h-4 w-4 text-muted-foreground" />
+                <CardTitle className="text-xs sm:text-sm font-medium">Best Streak</CardTitle>
+                <Trophy className="h-4 w-4 text-muted-foreground flex-shrink-0" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-primary">{bestPeakStreak}</div>
+                <div className="text-xl sm:text-2xl font-bold text-primary">{bestPeakStreak}</div>
                 <p className="text-xs text-muted-foreground">Days in a row</p>
               </CardContent>
             </Card>
           </div>
 
           {/* Task Management */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle className="flex items-center gap-2">
-                  <Calendar className="h-5 w-5" />
+          <Card className="px-2 sm:px-0">
+            <CardHeader className="px-2 sm:px-6">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+                <CardTitle className="flex items-center gap-2 text-lg sm:text-base">
+                  <Calendar className="h-5 w-5 flex-shrink-0" />
                   Daily Tasks
                 </CardTitle>
-                <Button onClick={() => setShowAddTask(true)} size="sm">
+                <Button onClick={() => setShowAddTask(true)} size="sm" className="w-full sm:w-auto">
                   <Plus className="h-4 w-4 mr-2" />
                   Add Task
                 </Button>
               </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="px-2 sm:px-6">
               <TaskList tasks={tasks} onToggleTask={toggleTask} onDeleteTask={deleteTask} />
               {tasks.length === 0 && (
               <div className="text-center py-8 text-muted-foreground">
                 <Target className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>No tasks yet. Add your first daily task to start building streaks!</p>
+                <p className="text-sm">No tasks yet. Add your first daily task to start building streaks!</p>
               </div>
             )}
             </CardContent>
