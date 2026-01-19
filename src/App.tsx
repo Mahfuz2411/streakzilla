@@ -1,10 +1,12 @@
-import { useEffect, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "./components/ui/card"
-import { Calendar, Flame, Plus, Target, Trophy } from "lucide-react"
+import { useEffect, useState, useRef } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "./components/ui/card";
+import { Calendar, Flame, Plus, Target, Trophy } from "lucide-react";
 import { AddTaskDialog } from "./components/layout/AddTaskDialog";
 import { TaskList } from "./components/layout/TaskList";
+import { CompleteTaskDialog } from "./components/layout/CompleteTaskDialog";
 import { Progress } from "./components/ui/progress";
 import { Button } from "./components/ui/button";
+import { getAllTasks, replaceTasks, deleteTask as deleteTaskDb, type Task as DbTask } from "./lib/db";
 
 const motivationalQuotes = [
   "Believe you can and you're halfway there.",
@@ -14,97 +16,134 @@ const motivationalQuotes = [
   "Success is not final, failure is not fatal: It is the courage to continue that counts.",
 ]
 
-interface Task {
-  id: string
-  title: string
-  completed: boolean
-  streak: number
-  peakStreak?: number // Added peak streak tracking
-  lastCompleted: string | null
-  createdAt: string
-}
+type Task = DbTask;
 
 function App() {
   const [tasks, setTasks] = useState<Task[]>([])
   const [showAddTask, setShowAddTask] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+  const [pendingCompleteId, setPendingCompleteId] = useState<string | null>(null)
   const [todaysQuote] = useState(() => motivationalQuotes[Math.floor(Math.random() * motivationalQuotes.length)])
+  const hasInitialized = useRef(false)
 
-  // Load tasks from localStorage on mount
+  // Load data from IndexedDB when app starts
   useEffect(() => {
-    const savedTasks = localStorage.getItem("streakzilla-tasks")
-    if (savedTasks) {
-      setTasks(JSON.parse(savedTasks))
-    }
-  }, [])
+    (async () => {
+      try {
+        const saved = await getAllTasks();
+        setTasks(saved);
+      } catch (err) {
+        console.warn("IndexedDB read failed", err);
+      }
+      hasInitialized.current = true;
+      setIsLoading(false);
+    })();
+  }, []);
 
-  // Save tasks to localStorage whenever tasks change
+  // Save everything to IndexedDB whenever tasks change (but only after first load)
   useEffect(() => {
-    localStorage.setItem("streakzilla-tasks", JSON.stringify(tasks))
-  }, [tasks])
+    if (!hasInitialized.current || !tasks) return;
+    (async () => {
+      try {
+        await replaceTasks(tasks);
+      } catch (err) {
+        console.warn("IndexedDB write failed", err);
+      }
+    })();
+  }, [tasks]);
 
-  // Check for streak resets on app load
+  // Clean up old tasks: reset streaks if they're older than yesterday, and clear completed flags from previous days
   useEffect(() => {
-    const today = new Date().toDateString()
-    const yesterday = new Date(Date.now() - 86400000).toDateString()
+    if (isLoading) return;
+    
+    const today = new Date().toDateString();
+    const yesterday = new Date(Date.now() - 86400000).toDateString();
+    const nowIso = new Date().toISOString();
 
     setTasks((prev) =>
       prev.map((task) => {
+        // Streak broken? Reset it if last completion was before yesterday
         if (task.lastCompleted && task.lastCompleted !== today && task.lastCompleted !== yesterday) {
-          return { ...task, streak: 0 }
+          return { ...task, streak: 0, completed: false, lastCompleted: null, updatedAt: nowIso };
         }
-        return task
+        // Clear the "completed today" flag if it's from a previous day
+        if (task.completed && task.lastCompleted !== today) {
+          return { ...task, completed: false, updatedAt: nowIso };
+        }
+        return task;
       }),
-    )
-  }, [])
+    );
+  }, [isLoading]);
 
   const addTask = (title: string) => {
+    const nowIso = new Date().toISOString();
     const newTask: Task = {
       id: Date.now().toString(),
       title,
       completed: false,
       streak: 0,
       lastCompleted: null,
-      createdAt: new Date().toISOString(),
-    }
-    setTasks((prev) => [...prev, newTask])
-  }
+      createdAt: nowIso,
+      updatedAt: nowIso,
+    };
+    setTasks((prev) => [...prev, newTask]);
+  };
 
   const toggleTask = (taskId: string) => {
-    const today = new Date().toDateString()
+    const task = tasks.find((t) => t.id === taskId);
+    if (!task) return;
+
+    // When marking done, show confirmation popup (can't undo this)
+    if (!task.completed) {
+      setPendingCompleteId(taskId);
+      return;
+    }
+
+    // Can uncheck anytime, just updates UI state
+    setTasks((prev) =>
+      prev.map((t) =>
+        t.id === taskId ? { ...t, completed: false, updatedAt: new Date().toISOString() } : t,
+      ),
+    );
+  };
+
+  const confirmCompleteTask = (taskId: string) => {
+    const today = new Date().toDateString();
+    const yesterday = new Date(Date.now() - 86400000).toDateString();
+    const nowIso = new Date().toISOString();
 
     setTasks((prev) =>
       prev.map((task) => {
-        if (task.id === taskId) {
-          const wasCompleted = task.completed
-          const newCompleted = !wasCompleted
+        if (task.id !== taskId) return task;
 
-          if (newCompleted && task.lastCompleted !== today) {
-            const newStreak = task.streak + 1
-            const newPeakStreak = Math.max(task.peakStreak || 0, newStreak)
-            return {
-              ...task,
-              completed: true,
-              streak: newStreak,
-              peakStreak: newPeakStreak,
-              lastCompleted: today,
-            }
-          } else if (!newCompleted && task.lastCompleted === today) {
-            // Uncompleting task that was completed today
-            return {
-              ...task,
-              completed: false,
-              streak: Math.max(0, task.streak - 1),
-              lastCompleted: task.streak > 1 ? today : null,
-            }
+        // Only bump streak once per day
+        let newStreak = task.streak;
+        if (task.lastCompleted !== today) {
+          if (task.lastCompleted === yesterday) {
+            newStreak = task.streak + 1;
+          } else {
+            newStreak = 1;
           }
         }
-        return task
+
+        const newPeakStreak = Math.max(task.peakStreak || 0, newStreak);
+        return {
+          ...task,
+          completed: true,
+          streak: newStreak,
+          peakStreak: newPeakStreak,
+          lastCompleted: today,
+          updatedAt: nowIso,
+        };
       }),
-    )
-  }
+    );
+
+    setPendingCompleteId(null);
+  };
 
   const deleteTask = (taskId: string) => {
-    setTasks((prev) => prev.filter((task) => task.id !== taskId))
+    setTasks((prev) => prev.filter((task) => task.id !== taskId));
+    deleteTaskDb(taskId).catch((err) => console.warn("IndexedDB delete failed", err));
   }
 
   const completedToday = tasks.filter((task) => task.completed).length
@@ -191,6 +230,15 @@ function App() {
           </Card>
 
           <AddTaskDialog open={showAddTask} onOpenChange={setShowAddTask} onAddTask={addTask} />
+
+          {pendingCompleteId && (
+            <CompleteTaskDialog
+              open={!!pendingCompleteId}
+              taskTitle={tasks.find((t) => t.id === pendingCompleteId)?.title || ""}
+              onConfirm={() => confirmCompleteTask(pendingCompleteId)}
+              onCancel={() => setPendingCompleteId(null)}
+            />
+          )}
         </div>
       </div>
     </>
