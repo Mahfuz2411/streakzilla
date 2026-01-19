@@ -27,12 +27,12 @@ export function CompleteTaskDialog({
         <AlertDialogHeader>
           <AlertDialogTitle>Mark Task Complete?</AlertDialogTitle>
           <AlertDialogDescription className="space-y-2">
-            <p>
+            <div>
               Are you sure you want to mark <strong>{taskTitle}</strong> as done today?
-            </p>
-            <p className="text-destructive font-medium">
+            </div>
+            <div className="text-destructive font-medium">
               ⚠️ This action cannot be undone. Your streak will be updated.
-            </p>
+            </div>
           </AlertDialogDescription>
         </AlertDialogHeader>
         <div className="flex gap-3">

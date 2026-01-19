@@ -48,9 +48,11 @@ export function TaskList({ tasks, onToggleTask, onDeleteTask }: TaskListProps) {
   return (
     <div className="space-y-3">
       {tasks.map((task) => {
+        const today = new Date().toDateString()
         const streakStatus = getStreakStatus(task)
         const isOverdue = !task.completed && task.lastCompleted !== today
-        const peakStreak = task.peakStreak || task.streak // Use peak streak or current streak as fallback
+        const peakStreak = task.peakStreak || task.streak
+        const isLockedIn = task.completed && task.lastCompleted === today
 
         return (
           <Card
@@ -63,7 +65,8 @@ export function TaskList({ tasks, onToggleTask, onDeleteTask }: TaskListProps) {
                   <Checkbox
                     checked={task.completed}
                     onCheckedChange={() => onToggleTask(task.id)}
-                    className="data-[state=checked]:bg-primary data-[state=checked]:border-primary mt-1 h-5 w-5 border-2 hover:border-primary/60 transition-colors"
+                    disabled={isLockedIn}
+                    className="data-[state=checked]:bg-primary data-[state=checked]:border-primary mt-1 h-5 w-5 border-2 hover:border-primary/60 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   />
                   {/* <span className="text-xs text-muted-foreground font-medium">{task.completed ? "Done" : "Mark"}</span> */}
                 </div>
