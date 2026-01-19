@@ -113,8 +113,6 @@ function App() {
   const totalStreaks = tasks.reduce((sum, task) => sum + task.streak, 0)
   const bestPeakStreak = Math.max(...tasks.map((t) => t.peakStreak || 0), 0)
 
-
-
   return (
     <>
       <div className="min-h-screen bg-background p-4 md:p-6">
